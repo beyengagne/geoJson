@@ -40,9 +40,13 @@
         mymap.addLayer(backgroundLayer);
 
         // var marker = L.marker([0, 0]).addTo(mymap);
-
+        
+        //  liens API        
         const apiVigi = 'https://public.opendatasoft.com/api/records/1.0/search/?dataset=vigicrues&q=&rows=30&sort=timestamp&facet=station_id&facet=lbstationhydro&facet=cdcommune&facet=timestamp&facet=cdzonehydro&facet=nom_reg&facet=nom_com&facet=nom_epci&facet=nom_dep&refine.nom_dep=SEINE-ET-MARNE';
-        const apiMeteo = 'https://public.opendatasoft.com/api/records/1.0/search/?dataset=risques-meteorologiques-par-departement-historique&q=&rows=30&sort=-timestamp&facet=nom_reg&facet=nom_dept&facet=etat_vent&facet=etat_pluie_inondation&facet=etat_inondation&facet=etat_neige&facet=etat_canicule&facet=etat_grand_froid&facet=etat_avalanches&facet=etat_vague_submersion&facet=timestamp&refine.nom_dept=SEINE-ET-MARNE';
+        //const apiMeteo = 'https://public.opendatasoft.com/api/records/1.0/search/?dataset=risques-meteorologiques-par-departement-historique&q=&rows=30&sort=-timestamp&facet=nom_reg&facet=nom_dept&facet=etat_vent&facet=etat_pluie_inondation&facet=etat_inondation&facet=etat_neige&facet=etat_canicule&facet=etat_grand_froid&facet=etat_avalanches&facet=etat_vague_submersion&facet=timestamp&refine.nom_dept=SEINE-ET-MARNE';
+       
+        //  fonction de recuperation des données de l'API 
+        
         async function getStation() {
             const response = await fetch(apiVigi);
             // const response2 = await fetch(apiMeteo);
@@ -50,7 +54,9 @@
             // const data2 = await response2.json();
             console.log(data);
             // console.log(data2);
-
+            
+            
+            // Parcourrir le geojson et recuperation des coordonnées 
             for (let i = 0; i < data.records.length; i++) {
 
                 // console.log(data.records[i].fields);
@@ -63,7 +69,10 @@
         }
         }
 
+        //Appel à la fonction getStation
         getStation();
+        
+        // Refresh page 
         setInterval(getStation, 1200000);
 
         
