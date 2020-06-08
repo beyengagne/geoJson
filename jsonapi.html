@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin="" />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+    <style>
+        #mapid {
+            height: 400px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Données API Vigicrue</h1>
+    <p> Resultat : <span id="infos"></span></p>
+    <div id="mapid"></div>
+
+
+    <script>
+        // Creation objet map
+        var mymap = L.map('mapid');
+        mymap.setView([48.8534, 2.3488], 9);
+
+        var scale = L.control.scale(); // Creating scale control
+        scale.addTo(mymap); // Adding scale control to the map
+
+        // Ajout de fond de carte openstreetmap
+        var backgroundLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}');
+        mymap.addLayer(backgroundLayer);
+
+        // var marker = L.marker([0, 0]).addTo(mymap);
+
+        const apiVigi = 'https://public.opendatasoft.com/api/records/1.0/search/?dataset=vigicrues&q=&rows=30&sort=timestamp&facet=station_id&facet=lbstationhydro&facet=cdcommune&facet=timestamp&facet=cdzonehydro&facet=nom_reg&facet=nom_com&facet=nom_epci&facet=nom_dep&refine.nom_dep=SEINE-ET-MARNE';
+        const apiMeteo = 'https://public.opendatasoft.com/api/records/1.0/search/?dataset=risques-meteorologiques-par-departement-historique&q=&rows=30&sort=-timestamp&facet=nom_reg&facet=nom_dept&facet=etat_vent&facet=etat_pluie_inondation&facet=etat_inondation&facet=etat_neige&facet=etat_canicule&facet=etat_grand_froid&facet=etat_avalanches&facet=etat_vague_submersion&facet=timestamp&refine.nom_dept=SEINE-ET-MARNE';
+        async function getStation() {
+            const response = await fetch(apiVigi);
+            // const response2 = await fetch(apiMeteo);
+            const data = await response.json();
+            // const data2 = await response2.json();
+            console.log(data);
+            // console.log(data2);
+
+            for (let i = 0; i < data.records.length; i++) {
+
+                // console.log(data.records[i].fields);
+                var lat = data.records[i].geometry.coordinates[1];
+                var lon = data.records[i].geometry.coordinates[0];
+                // console.log(lat);
+                var marker = L.marker([lat, lon]).addTo(mymap);
+                // console.log(lon);
+
+
+            
+
+            function displayGeoJSON(data, modele) {
+                var LeafIcon = L.Icon.extend({
+                  options: {
+                    shadowUrl: '',
+                    iconSize:     [20, 30],
+                    shadowSize:   [20, 30]
+                    // iconAnchor:   [22, 94],
+                    // shadowAnchor: [4, 62],
+                    // popupAnchor:  [-3, -76]
+                    }
+                });
+
+                var iconMarker = "";
+
+                if(modele == "Ecole"){
+                  iconMarker = new LeafIcon({iconUrl: './img/icon/schools.png'});
+
+                }else if(modele == "Hopital"){
+                  iconMarker = new LeafIcon({iconUrl:'./img/icon/health-medical.png'});
+                }else if(modele == "ZAS"){
+                  iconMarker = new LeafIcon({iconUrl:'./img/icon/commercial-places.png'});
+                }
+                else{
+                  iconMarker = new LeafIcon({iconUrl:'./img/icon/default.png'});
+                }
+
+
+                // L.geoJson permet d'afficher le geoJSON passé en paramètres.
+                return L.geoJson(data, {
+                  // S'applique sur chaque feature de la couche
+                  onEachFeature: function(feature, layer) {
+                    var affichage = "<h2> "+ modele +" N°" + data.records[i].fields.station_id + "</h2>";
+                    for(var key in data.records[i].fields)
+                      affichage += "<p><strong>" + key + "</strong> : " + data.records[i].fields.hauteur + "</p>";
+                    
+                    console.log(affichage);
+                    layer.bindPopup(affichage);
+                  },
+                  pointToLayer: function(feature, latlng) {
+                    return L.marker(latlng, {icon: iconMarker});
+                  }
+
+                }).addTo(mymap);
+              }
+
+        }
+        }
+
+        getStation();
+        setInterval(getStation, 1200000);
+
+        
+
+    </script>
+
+</body>
+
+</html>
